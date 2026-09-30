@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chainforge"
+version = "0.1.0"
+description = "贝叶斯后验推断工具箱：手写 NUTS / ADVI / Laplace + 旗舰 VarioNUTS（变分预条件 NUTS + 诊断门控 + 诚实回退）"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "晨星" }]
+keywords = ["mcmc", "nuts", "bayesian", "advi", "probabilistic-programming", "hamiltonian-monte-carlo"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/CJX0712/chainforge"
+
+[tool.setuptools.packages.find]
+include = ["chainforge*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF", "BLE", "S"]
+# RUF001/002/003 会把中文标点与 CJK 字符判为"歧义字符"——本仓库注释与文档字符串用中文
+# S101 测试里允许 assert
+ignore = ["S101", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["BLE", "S"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
