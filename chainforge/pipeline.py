@@ -77,7 +77,7 @@ def run_benchmark(
         for me in methods:
             row = run_one(mk, me, cfg, seed)
             rows.append(row)
-            status = "✓" if row["status"] == "ok" else "✗"
+            status = "OK" if row["status"] == "ok" else "X"
             extra = (
                 f" meanZ={row['mean_z_err']:.3f} sdLog={row['sd_log_err']:.3f} "
                 f"ess={row['ess_bulk_min']:.0f} rhat={row['rhat_max']:.3f} div={row['divergences']}"
@@ -117,7 +117,7 @@ def verify_flagship(rows: list[dict[str, Any]]) -> bool:
         n = by_key.get((mk, "nuts"))
         if not v:
             ok = False
-            print(f"flagship {mk:12s} ✗ vario_nuts 缺失/失败")
+            print(f"flagship {mk:12s} X vario_nuts 缺失/失败")
             continue
         line = f"flagship {mk:12s}"
         if n:
@@ -126,12 +126,12 @@ def verify_flagship(rows: list[dict[str, Any]]) -> bool:
             ok &= passed
             line += (
                 f" rhat {v['rhat_max']:.3f}<=nuts×1.15 {cap:.3f}"
-                f" meanZ {v['mean_z_err']:.3f} {'✓' if passed else '✗'}"
+                f" meanZ {v['mean_z_err']:.3f} {'OK' if passed else 'X'}"
             )
         if mk == "funnel" and n:
             passed = v["divergences"] <= n["divergences"]
             ok &= passed
-            line += f" | div {v['divergences']}<={n['divergences']} {'✓' if passed else '✗'}"
+            line += f" | div {v['divergences']}<={n['divergences']} {'OK' if passed else 'X'}"
         print(line)
     return ok
 
