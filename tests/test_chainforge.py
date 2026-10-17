@@ -262,21 +262,30 @@ def test_advi_fullrank_beats_diagonal_on_correlated():
 def test_nuts_two_seeds_agree():
     m = build_models(["banana"])["banana"]
     ref = m.reference_posterior()
+    # 1000 draws/chain 时两 seed 均值差可达 0.56（单位：参照 sd），恰好越过 0.5 阈值，
+    # 是蒙特卡洛误差而非收敛失败：MC 误差 ~ 1/sqrt(ESS)，draws 提到 3000 使其降到阈内。
     cfg = Config(
         n_chains=2,
-        max_draws_per_chain=1000,
+        max_draws_per_chain=3000,
         warmup_standard=500,
         target_accept=0.95,
-        cost_budget=200_000,
+        cost_budget=600_000,
     )
     means = []
+    esses = []
     for seed in (100, 200):
         c = CountingModel(m)
         res = NUTSSampler().run(c, cfg, np.random.default_rng(seed), Budget(c, cfg.cost_budget))
-        means.append(res.draws.reshape(-1, 2).mean(axis=0))
+        chains3 = res.draws.reshape(cfg.n_chains, -1, 2)
+        esses.append(ess_bulk(chains3))
+        means.append(chains3.reshape(-1, 2).mean(axis=0))
     # 两个独立运行给出一致的均值（单位：参照 sd）
     diff = np.abs(means[0] - means[1]) / ref.sd
-    assert np.max(diff) < 0.5
+    ess = min(esses)
+    assert np.max(diff) < 0.5, (
+        f"seed disagreement {np.max(diff):.4f} sd; min ESS {ess:.1f} "
+        f"(4-sigma MCSE bound {4.0 * np.sqrt(2.0 / max(ess, 1.0)):.4f})"
+    )
 
 
 def test_funnel_divergences_expected_but_bounded():
